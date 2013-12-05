@@ -3,6 +3,8 @@
 namespace Phpdemo;
 
 require_once 'WordsModel.php';
+require_once 'HtmlOutput.php';
+
 class WordsController {
 
 	/**
@@ -10,29 +12,35 @@ class WordsController {
 	 */
 	private $wordsModel;
 
-	function __construct(WordsModel $wordsModel) {
+	/**
+	 * @var HtmlOutput
+	 */
+	private $out;
+
+	function __construct(WordsModel $wordsModel, HtmlOutput $out) {
 		$this->wordsModel = $wordsModel;
+		$this->out = $out;
 	}
 
 	public function showTable($url) {
-		$html = $this->wordsModel->getWebPageHtmlContents($url);
-		$body = $this->wordsModel->getHtmlBodyText($html);
-		$words = $this->wordsModel->getAllWordsFromHtml($body);
-		$words = $this->wordsModel->deleteWordsWithSpecSymbols($words);
-		$words = $this->wordsModel->deleteNonUniqueWords($words);
-		$words = $this->wordsModel->sortWords($words);
-		$table = $this->wordsModel->makeWordsTableByFirstLetter($words);
-		$rows = $this->wordsModel->getMaxWordCountByLetter($table);
-		$output = $this->getOutputHtml($table, $rows);
-		$this->output($output);
+
+		$model = &$this->wordsModel;
+		$html = $model->getWebPageHtmlContents($url);
+		$body = $model->getHtmlBodyText($html);
+		$words = $model->getAllWordsFromHtml($body);
+		$words = $model->deleteWordsWithSpecSymbols($words);
+		$words = $model->deleteNonUniqueWords($words);
+		$words = $model->sortWords($words);
+		$table = $model->makeWordsTableByFirstLetter($words);
+		$rowsCount = $model->getMaxWordCountByLetter($table);
+
+		$this->out->display(
+			$this->out->makeHtml($table, $rowsCount)
+		);
 	}
 
-	public function output($outputHtml) {
-		echo $outputHtml;
-	}
 
-	private function getOutputHtml($table, $rows) {
-		return "";
-	}
+
+
 
 }
